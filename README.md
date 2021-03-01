@@ -2,6 +2,8 @@
 ## General Assembly Project 3
 My third development project was a comlex MERN Stack app built with my classmates <a href="https://github.com/ketka82uk" target="_blank" rel="noreferrer">Cathy</a>, <a href="https://github.com/jacobaston" target="_blank" rel="noreferrer">Jake</a>, and <a href="https://github.com/ollieaa" target="_blank" rel="noreferrer">Ollie</a>.
 
+*Clarification for my fellow American readers: my teammates were all British, and Loose End is a common British phrase that essentially means you don't really know what to do.* 
+
 This app was deployed on Heroku and can be accessed <a href="https://loose-end.herokuapp.com/" target="_blank" rel="noreferrer">here</a>. While you can create your own account, feel free to use mine to access admin privileges
 * Email: katherine@katherine.com
 * Password: password123
@@ -53,9 +55,6 @@ This app was deployed on Heroku and can be accessed <a href="https://loose-end.h
 4. Finally, navigate to the `client` folder and run `npm i` and `npm run serve` to run the program in your local environment
 
 ## App Flow
-**The home page. Created by <a href="https://github.com/jacobaston" target="_blank" rel="noreferrer">Jake</a>**
-![Screen Shot 2021-02-27 at 10 12 52 AM](https://user-images.githubusercontent.com/73107893/109383115-9275c380-78e4-11eb-9b66-6544eb44ef67.png)
-
 **The home page after logging on. Created by <a href="https://github.com/jacobaston" target="_blank" rel="noreferrer">Jake</a>**
 ![Screen Shot 2021-02-27 at 10 13 33 AM](https://user-images.githubusercontent.com/73107893/109383143-cc46ca00-78e4-11eb-8b4d-c3950a250b15.png)
 
@@ -96,7 +95,7 @@ This app was deployed on Heroku and can be accessed <a href="https://loose-end.h
 * Add items to their wishlist
 
 ## Process
-The idea for our app came from a teammate who used to work in conference services and notied that those who travelled for business were often alone and didn't know what to do outside of work. We took that idea and hit the ground running. *Note to my fellow American readers: my classmates are all British, and Loose End is a common British phrase that essentially means you don't really know what to do.* 
+The idea for our app came from a teammate who used to work in conference services and notied that those who travelled for business were often alone and didn't know what to do outside of work. We took that idea and hit the ground running. 
 
 Over Zoom and Slack, we brainstormed and strategized and whiteboarded proposals about how we thought the page could look. We sketched out our models (user, meet up, restaurants, point of interest), our routes and then we created a wireframe: ![Screen Shot 2021-02-27 at 10 53 53 AM](https://user-images.githubusercontent.com/73107893/109383980-3c0b8380-78ea-11eb-8886-ddc85eb1a675.png)
 *We may be in 2021, but nothing beats writing things out by hand*
@@ -111,7 +110,10 @@ By Day 2, we were ready to begin the backend. We thought it was very important t
 
 ## My role 
 ### Backend
-One key area that I wanted to practice with during project 3 revolved around API creation and the things I could do with that data. As this app is designed for a traveler, I curated a diverse data set of 30 interesting sites around London using a controlled vocabulary. The POI (*point of interest*) model: 
+Using MongoDB for the backend, I first had to setup my data model, my controller (which dictates functionalities) and my router to navigate the website.
+
+*Data model*
+One key area that I wanted to practice with during project 3 revolved around API creation and how the user could interact and search through that data. As this app is designed for a traveler, I curated a diverse data set, key-value pairs in JSON format, of 30 interesting sites around London using a various fields (to aid in filtering and information retrieval). The POI (*point of interest*) data model: 
 ```
 const poiSchema = new mongoose.Schema({
   category: { type: String },
@@ -125,7 +127,6 @@ const poiSchema = new mongoose.Schema({
       return typesArray.length > 0
     }
   },
-  // user: { type: mongoose.Schema.ObjectId, ref: 'User', required: true },
   user: { type: mongoose.Schema.ObjectId, ref: 'User' },
   latlng: { 
     type: [Number]
@@ -137,12 +138,9 @@ const poiSchema = new mongoose.Schema({
   funfact: { type: String },
   image: { type: String },
   link: { type: String },
-  upVotes: { type: Number },
-  comments: [ Comment ],
-  events: { type: [mongoose.Schema.ObjectId], ref: 'MeetUp' }
 })
 ```
-To avoid duplicates, I required that the `Name` be unique. The only fields required are the name, the nearest Tube stop, a description and the type, from which there are various to choose from: 
+To avoid duplicates, I required that the `Name` be unique. The only fields required are the name, the nearest Tube stop, a description and the type. The type operates within a taxonomy I developed to try and encompass all possible data values that could arise. 
 ```
 export default [
   { value: 'gallery', label: 'Galleries' },
@@ -154,7 +152,6 @@ export default [
   { value: 'other', label: 'Other' },
   { value: 'palace', label: 'Palaces' },
   { value: 'park', label: 'Parks' },
-  // { value: 'public', label: 'Public Art' },
   { value: 'religious', label: 'Religious Buildings' },
   { value: 'sports', label: 'Sports' },
   { value: 'square', label: 'Squares' },
@@ -182,10 +179,30 @@ For example:
       funfact: 'Housed inside the famous Palm House, the world’s oldest pot plant, a huge Jurassic cyad (Encephalartos altensteinii) originally came to Kew in 1775. Plant-hunter, Frances Masson, collected the specimen during one of Captain Cook’s voyages from the Eastern Cape of South Africa.',
       image: 'https://res.cloudinary.com/dnma7wqzb/image/upload/v1613818132/kew_trvxvt.jpg',
       link: 'https://www.kew.org',
-      upVotes: 0,
-      comments: [],
-      events: []
     },
+```
+
+*Controller*
+The functionalities I enabled in my controller were:
+* GET all POIs
+* GET a single POI
+* POST a POI
+* DELETE a POI
+* PUT (or update) a POI
+* I debated about whether to add comments but, as this will not be a monitored site, I decided to disable comments
+
+For example, to update a POI, I wrote backend logic that verifies that the index position of the POI the user wants to update and the id number are the same, wrapped in a try-catch statement to improve error handling.
+```
+async function updatePoi(req, res, next) {
+  const id = req.params.id
+  const body = req.body
+  try {
+    const updatedPoi = await Poi.findByIdAndUpdate(id, body, { new: true })
+    res.send(updatedPoi)
+  } catch (err) {
+    next(err)
+  }
+}
 ```
 
 ### Front-end
@@ -200,12 +217,11 @@ Components I created:
 * UpdatePoi
 * Map section of SingleRestaurant
 
-I used React useEffect and useState to manipulate the data, axios to fetch the data, lodash to shuffle the results each time the page reloads and a guard condition while loading.
-
 **POI**
-A second key area that I wanted to focus on was accessibility. Following W3C guidelines, I enabled multiple search and filter options by manipulating the state. The user can search using controlled vocabulary terms via a drop down menu, or they can search using natural language.
+I used React useState hook to allow me to add state to function components and thus manipulate the data shown on the page, and the useEffect hook to fetch said data. Using an async await function, I fetched the data using axios, used lodash to shuffle the the results each time the page reloads and a guard condition to improve user experience while the page is loading.
+
+After getting the data on the page, I wanted to focus on accessibility best practices, following W3C guildelines. I enabled multiple search and filter options. First, I used React hooks to filter through the data set based on `type`, using the event handler `event.target.value` to update the value of the search and of the data returned. Second, I created a search bar in which the user can use natural language, and I was sure to write logic that understood the search and returned results regardless of whether the search or data is in upper or lower case.
 ```
-  const [poiData, updatePoi] = useState([])
   const [type, updateType] = useState('All')
   const [search, updateSearch] = useState('')
   
@@ -278,11 +294,8 @@ function PoiForm({ formData, handleSubmit, handleChange, handleTypeChange }) {
  ![Screen Shot 2021-02-27 at 11 13 24 AM (2)](https://user-images.githubusercontent.com/73107893/109384425-f1d7d180-78ec-11eb-842c-77ef5e8af92f.png)
 ![Screen Shot 2021-02-27 at 11 13 29 AM (2)](https://user-images.githubusercontent.com/73107893/109384428-f3a19500-78ec-11eb-8eee-f68977acb6f9.png)
 
-If logged in, the user can add any POI to their wishlist. If they are the creator, they can update the information they previously put, or they can delete the POI altogether.
+The most exciting pieces of code on this page are those that allow the user to add a POI to their wishlist and the logic that checks if the person viewing the page is the Creator and thus can edit or delete the page. Using Express asynch-await functions to handle the requests, this logic analyzes the logged in user's data and then validates what they can or cannot do. 
 ```
-//VARIABLES
-  const [loggedInUser, updateLoggedInUser] = useState({})
-
 //USER VALIDATION
   async function getLoggedInUser() {
     const userId = getLoggedInUserId()
@@ -300,15 +313,6 @@ If logged in, the user can add any POI to their wishlist. If they are the creato
       headers: { Authorization: `Bearer ${token}` }
     })
     alert('Added to your wishlist!')
-  }
-
-//DELETING POI
-  async function handleDelete() {
-    const token = localStorage.getItem('token')
-    await axios.delete(`/api/poi/${poiId}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    history.push('/poi')
   }
 
   getLoggedInUser()
@@ -332,24 +336,9 @@ If logged in, the user can add any POI to their wishlist. If they are the creato
 ```
 **UpdatePoi**
 This Component works similarly to the `CreatePoi` Component, except that there are user validation elements to ensure that only the user that created the POI can edit/delete it and the form is pre-populated with the POI's data.
-```
-  async function handleSubmit(event) {
-    event.preventDefault()
-    const token = localStorage.getItem('token')
-    try {
-      const { data } = await axios.put(`/api/poi/${poiId}`, formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      
-      history.push(`/poi/${data._id}`)
-    } catch (err) {
-      console.log(err.response.data)
-    }
-  }
-```
 
 **Map**
-Using Mapbox, I also created a map of all of the POIs in my API. I included both the drop-down filter and the search bar on this page. Initially, I had the POIs marked with typical map markers but I thought that, in the case of our targeted user, being able to easily recogize the name of a site would be more beneficial than blind tapping on markers.
+Using Mapbox, I also created a map of all of the POIs in my API. This required that the latitude and longitude of each site be held in the API in a Mapbox-compatible form. I included both the drop-down filter and the search bar on this page. Initially, I had the POIs marked with typical map markers but I thought that, in the case of our targeted user, being able to easily recogize the name of a site would be more beneficial than blind tapping on markers.
 
 I defined the starting state: 
 ```
@@ -391,11 +380,11 @@ I wrapped all the data in the `filterPoi()` function and mapped out the POIs, ma
  I did the exact same for the Food and Drink Map, just changing the API fetch request. This is also how I implemented the maps into the individual POI and restaurant pages (although I did not make the map labels links).
  
  **Footer**
- On my quest for accessibilty, I implemented a site map in our footer with clearly defined links to each page of our website (save individual POI and restaurant pages).
+On my quest for accessibilty, I implemented a site map in our footer with clearly defined links to each page of our website (save individual POI and restaurant pages).
 
 ## Takeaways
 ### Wins
-* Outstanding teamwork 
+* Learning how to work remotely in a team. This is a skill that is going to be invaluable in the workplace, and this project offered me the perfect opportunity to develop my capabilities in this area 
 * The creation of my API. I love this side of the backend and I was thrilled to be able to test out my skills in this area
 * Bulma. This was the first time I've used a CSS framework on a project and it was an excellent learning experience 
 * We created a real MERN full-stack application! It makes the past 2 months of learning feel very real 
@@ -404,10 +393,10 @@ I wrapped all the data in the `filterPoi()` function and mapped out the POIs, ma
 ### Challenges
 * Digital communication and planning (as we cannot be with each other in person)
 * Navigating asynch functions and promises
+* Planning an exhaustive data model before data curation so that constant tweaks and edits are not having to be made. Practice makes perfect!
 
 ### Future features
 * Mobile responsiveness
-* Comments
 * Likes
 * Photo library
 * More uniform styling on the `SinglePoi` pages
