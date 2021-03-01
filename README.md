@@ -108,11 +108,11 @@ Then we divied up tasks:
 
 By Day 2, we were ready to begin the backend. We thought it was very important that we work as a group, so we used VS Code LiveShare to set up the backend together: creating models, controllers, routes, middleware. Once we finished the backend, we each started working on our respective front-end tasks. To ease styling, we decided to use the Bulma CSS framework.
 
-## My role 
-### Backend
+# My role 
+## Backend
 Using MongoDB for the backend, I first had to setup my data model, my controller (which dictates functionalities) and my router to navigate the website.
 
-*Data model*
+### Data model
 One key area that I wanted to practice with during project 3 revolved around API creation and how the user could interact and search through that data. As this app is designed for a traveler, I curated a diverse data set, key-value pairs in JSON format, of 30 interesting sites around London using a various fields (to aid in filtering and information retrieval). The POI (*point of interest*) data model: 
 ```
 const poiSchema = new mongoose.Schema({
@@ -182,7 +182,7 @@ For example:
     },
 ```
 
-*Controller*
+### Controller
 The functionalities I enabled in my controller were:
 * GET all POIs
 * GET a single POI
@@ -205,7 +205,7 @@ async function updatePoi(req, res, next) {
 }
 ```
 
-### Front-end
+## Front-end
 Components I created: 
 * CreatePoi
 * Footer
@@ -217,7 +217,7 @@ Components I created:
 * UpdatePoi
 * Map section of SingleRestaurant
 
-**POI**
+### POI
 I used React useState hook to allow me to add state to function components and thus manipulate the data shown on the page, and the useEffect hook to fetch said data. Using an async await function, I fetched the data using axios, used lodash to shuffle the the results each time the page reloads and a guard condition to improve user experience while the page is loading.
 
 After getting the data on the page, I wanted to focus on accessibility best practices, following W3C guildelines. I enabled multiple search and filter options. First, I used React hooks to filter through the data set based on `type`, using the event handler `event.target.value` to update the value of the search and of the data returned. Second, I created a search bar in which the user can use natural language, and I was sure to write logic that understood the search and returned results regardless of whether the search or data is in upper or lower case.
@@ -246,7 +246,7 @@ After getting the data on the page, I wanted to focus on accessibility best prac
  ```
  The POI data is mapped on the page as a card with minimal information (name, type, description, tube and image). If the user wishes to add something to the list, they must simply log in and click the `Add somewhere new!` button. 
  
-**CreatePoi**
+### CreatePoi
 To create cleaner code, I created a separate `PoiForm` component using React-select, which I imported to this page. Additionally, I imported the `poiTypes` file so as to not have to hardcode the POI types.
 ```
 function PoiForm({ formData, handleSubmit, handleChange, handleTypeChange }) {
@@ -289,7 +289,7 @@ function PoiForm({ formData, handleSubmit, handleChange, handleTypeChange }) {
 }
  ```
  
- **SinglePoi**
+ ### SinglePoi
  Each of cards on the POI list page can be clicked, taking the user to a page focusing solely on the POI they clicked. These pages offer a host of new information, including a map, a link to the POI's website and a link to the profile of the user who posted it:
  ![Screen Shot 2021-02-27 at 11 13 24 AM (2)](https://user-images.githubusercontent.com/73107893/109384425-f1d7d180-78ec-11eb-842c-77ef5e8af92f.png)
 ![Screen Shot 2021-02-27 at 11 13 29 AM (2)](https://user-images.githubusercontent.com/73107893/109384428-f3a19500-78ec-11eb-8eee-f68977acb6f9.png)
@@ -334,10 +334,10 @@ The most exciting pieces of code on this page are those that allow the user to a
       >Delete Point of Interest</button>}
       <button className="button is-secondary" onClick={handleWishlistAdd}>Add to your wishlist!</button>
 ```
-**UpdatePoi**
+### UpdatePoi
 This Component works similarly to the `CreatePoi` Component, except that there are user validation elements to ensure that only the user that created the POI can edit/delete it and the form is pre-populated with the POI's data.
 
-**Map**
+### Map
 Using Mapbox, I also created a map of all of the POIs in my API. This required that the latitude and longitude of each site be held in the API in a Mapbox-compatible form. I included both the drop-down filter and the search bar on this page. Initially, I had the POIs marked with typical map markers but I thought that, in the case of our targeted user, being able to easily recogize the name of a site would be more beneficial than blind tapping on markers.
 
 I defined the starting state: 
@@ -379,8 +379,10 @@ I wrapped all the data in the `filterPoi()` function and mapped out the POIs, ma
   ```
  I did the exact same for the Food and Drink Map, just changing the API fetch request. This is also how I implemented the maps into the individual POI and restaurant pages (although I did not make the map labels links).
  
- **Footer**
+### Footer
 On my quest for accessibilty, I implemented a site map in our footer with clearly defined links to each page of our website (save individual POI and restaurant pages).
+![Screen Shot 2021-03-01 at 9 20 28 AM](https://user-images.githubusercontent.com/73107893/109470235-70f51300-7a6f-11eb-9418-297c1b6cab62.png)
+
 
 ## Takeaways
 ### Wins
